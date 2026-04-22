@@ -5,6 +5,11 @@ import random
 from sklearn.tree import DecisionTreeRegressor
 import time
 
+BUDGET = 100
+NUM_INTERVALS = 3
+NUM_ACQUISITION_SAMPLES = 100
+
+
 # Takes the upper and lower bounds of a config option and returns k different subregions of this option
 def CreateInterval(bounds, k):
     low, high = bounds
@@ -145,7 +150,7 @@ def ExploitationPhase(data, samples, maximisation, n):
         model.fit(X, y)
         
         # Selects configuration to measure next
-        newSample = AcquisitionFunction(data, model, 100, best_solution, maximisation)
+        newSample = AcquisitionFunction(data, model, NUM_ACQUISITION_SAMPLES, best_solution, maximisation)
 
         # Measures the performance of this configuration, then appends the configuration and its performance to the list of samples
         performance = MeasurePerformance(newSample, data, data.columns[:-1], data.columns[-1])
@@ -165,7 +170,7 @@ def MySearch(filePath, budget):
     # read data into matrix
     data = pd.read_csv(filePath)
 
-    samples = ExplorationPhase(data, 3, int(0.3*budget))
+    samples = ExplorationPhase(data, NUM_INTERVALS, int(0.3*budget))
  
     # # decide if its a maximisation problem
     if os.path.basename(filePath).split('.')[0] == "---":
@@ -184,7 +189,7 @@ def main():
 
     for _ in range(10):
         results = {}
-        budget = 100
+        budget = BUDGET
 
         for file_name in os.listdir(dataPath):
             if file_name.endswith(".csv"):
